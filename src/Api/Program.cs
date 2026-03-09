@@ -22,7 +22,10 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
+        policy.WithOrigins(
+                "http://localhost:4200",
+                "https://blue-cliff-0e4f85d00.2.azurestaticapps.net"
+            )
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -43,11 +46,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors();
-app.UseDefaultFiles();
-app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthorization();
 app.MapControllers();
-app.MapFallbackToFile("index.html");
 
 app.Run();
