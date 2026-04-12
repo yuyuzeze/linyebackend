@@ -1,0 +1,9 @@
+using Application.DTOs;
+
+namespace Application.Interfaces;
+
+public interface IBlobStorageService
+{
+    Task<BlobListResultDto> ListAsync(string containerName, string? prefix, CancellationToken cancellationToken = default);
+    Task<Stream> GetContentAsync(string containerName, string blobName, CancellationToken cancellationToken = default);
+}

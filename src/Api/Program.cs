@@ -1,5 +1,6 @@
 using Application.Interfaces;
 using Application.Services;
+using Api.Services;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,15 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<IDemoItemRepository, DemoItemRepository>();
 builder.Services.AddScoped<IDemoItemService, DemoItemService>();
+builder.Services.AddScoped<IVoucherRepository, VoucherRepository>();
+builder.Services.AddScoped<IProcessedBlobRecordRepository, ProcessedBlobRecordRepository>();
+builder.Services.AddScoped<IVoucherImportService, VoucherImportService>();
+builder.Services.AddSingleton<IBlobStorageService, BlobStorageService>();
+builder.Services.AddScoped<IApplicationTypeRepository, ApplicationTypeRepository>();
+builder.Services.AddScoped<IApplicationTypeFieldRepository, ApplicationTypeFieldRepository>();
+builder.Services.AddScoped<ICsvColumnMappingRepository, CsvColumnMappingRepository>();
+builder.Services.AddScoped<IApplicationTypeService, ApplicationTypeService>();
+builder.Services.AddScoped<ICsvMappingService, CsvMappingService>();
 
 builder.Services.AddCors(options =>
 {
