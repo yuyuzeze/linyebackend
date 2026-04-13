@@ -12,19 +12,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (string.IsNullOrWhiteSpace(connectionString))
-{
-    if (builder.Environment.IsDevelopment())
-    {
-        connectionString = "Server=(localdb)\\mssqllocaldb;Database=linye;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True";
-    }
-    else
-    {
-        throw new InvalidOperationException(
-            "Missing connection string 'DefaultConnection'. Configure it in App Service as ConnectionStrings:DefaultConnection.");
-    }
-}
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? "Server=(localdb)\\mssqllocaldb;Database=linye;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True";
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
 
@@ -74,20 +63,19 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        startupLogger.LogCritical(ex, "Database initialization failed.");
-        throw;
+        // Keep API process alive even if DB initialization fails.
+        // This allows diagnostics endpoints (e.g. Swagger/health) to be reachable.
+        startupLogger.LogError(ex, "Database initialization failed. API will continue to start.");
     }
 }
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseCors();
 app.UseRouting();
 app.UseAuthorization();
+app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 app.MapControllers();
 
 app.Run();
