@@ -3,7 +3,6 @@ using Application.Services;
 using Api.Services;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,31 +42,6 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
-
-using (var scope = app.Services.CreateScope())
-{
-    var startupLogger = scope.ServiceProvider
-        .GetRequiredService<ILoggerFactory>()
-        .CreateLogger("Startup");
-    try
-    {
-        var sqlConnectionBuilder = new SqlConnectionStringBuilder(connectionString);
-        startupLogger.LogInformation(
-            "Initializing database. Server: {Server}; Database: {Database}",
-            sqlConnectionBuilder.DataSource,
-            sqlConnectionBuilder.InitialCatalog);
-
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        await db.Database.MigrateAsync();
-        startupLogger.LogInformation("Database migration completed.");
-    }
-    catch (Exception ex)
-    {
-        // Keep API process alive even if DB initialization fails.
-        // This allows diagnostics endpoints (e.g. Swagger/health) to be reachable.
-        startupLogger.LogError(ex, "Database initialization failed. API will continue to start.");
-    }
-}
 
 app.UseSwagger();
 app.UseSwaggerUI();
