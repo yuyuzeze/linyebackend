@@ -1,6 +1,8 @@
+using System.Security.Claims;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Identity.Web;
 
 namespace Api.Extensions;
@@ -16,35 +18,39 @@ public static class WebApplicationBuilderExtensions
         }
 
         builder.Services.AddHttpClient("external");
+        builder.Services.AddHttpContextAccessor();
 
         return builder;
     }
 
     public static WebApplicationBuilder AddApiAuthentication(this WebApplicationBuilder builder)
     {
-        var authBuilder = builder.Services.AddAuthentication();
-
-        var jwtSection = builder.Configuration.GetSection("Jwt");
-        var jwtAuthority = jwtSection["Authority"];
-        var jwtAudience = jwtSection["Audience"];
-        if (!string.IsNullOrWhiteSpace(jwtAuthority) || !string.IsNullOrWhiteSpace(jwtAudience))
-        {
-            authBuilder.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
-            {
-                if (!string.IsNullOrWhiteSpace(jwtAuthority))
-                    options.Authority = jwtAuthority;
-                if (!string.IsNullOrWhiteSpace(jwtAudience))
-                    options.Audience = jwtAudience;
-            });
-        }
-
+        var authEnabled = builder.Configuration.GetValue("Authentication:Enabled", false);
         var azureAdSection = builder.Configuration.GetSection("AzureAd");
-        if (!string.IsNullOrWhiteSpace(azureAdSection["ClientId"]))
-        {
-            authBuilder.AddMicrosoftIdentityWebApi(azureAdSection);
-        }
+        var azureClientId = azureAdSection["ClientId"];
 
-        builder.Services.AddAuthorization();
+        builder.Services.AddAuthorization(options =>
+        {
+            if (authEnabled && !string.IsNullOrWhiteSpace(azureClientId))
+            {
+                options.FallbackPolicy = new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
+                    .RequireAuthenticatedUser()
+                    .Build();
+            }
+        });
+
+        if (!authEnabled || string.IsNullOrWhiteSpace(azureClientId))
+            return builder;
+
+        builder.Services
+            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddMicrosoftIdentityWebApi(azureAdSection);
+
+        builder.Services.Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
+        {
+            options.TokenValidationParameters.RoleClaimType = ClaimTypes.Role;
+        });
+
         return builder;
     }
 }

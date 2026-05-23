@@ -1,4 +1,5 @@
 using Api.Extensions;
+using Api.Middleware;
 using Api.Services;
 using Application.DependencyInjection;
 using Application.Interfaces;
@@ -48,6 +49,8 @@ try
     builder.Services.AddScoped<ICsvColumnMappingRepository, CsvColumnMappingRepository>();
     builder.Services.AddScoped<IApplicationTypeService, ApplicationTypeService>();
     builder.Services.AddScoped<ICsvMappingService, CsvMappingService>();
+    builder.Services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+    builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
     builder.Services.AddCors(options =>
     {
@@ -64,12 +67,21 @@ try
 
     var app = builder.Build();
 
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("AuthDataSeeder");
+        await AuthDataSeeder.SeedAsync(db, config, logger);
+    }
+
     app.UseSerilogRequestLogging();
     app.UseSwagger();
     app.UseSwaggerUI();
     app.UseCors();
     app.UseRouting();
     app.UseAuthentication();
+    app.UseMiddleware<RoleMiddleware>();
     app.UseAuthorization();
     app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
     app.MapControllers();

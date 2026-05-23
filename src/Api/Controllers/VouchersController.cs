@@ -21,7 +21,9 @@ public class VouchersController : ControllerBase
     /// 上传 CSV 文件并导入为传票（用于手动/测试导入，防重使用 api-upload 容器名）.
     /// </summary>
     [HttpPost("import")]
-    public async Task<ActionResult<VoucherImportResult>> Import([FromForm] IFormFile? file, CancellationToken cancellationToken)
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(typeof(VoucherImportResult), StatusCodes.Status200OK)]
+    public async Task<ActionResult<VoucherImportResult>> Import(IFormFile? file, CancellationToken cancellationToken)
     {
         if (file is null || file.Length == 0)
             return BadRequest("请上传 CSV 文件");
