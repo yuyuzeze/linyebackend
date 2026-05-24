@@ -1,5 +1,5 @@
-using Application.DTOs;
-using Application.Interfaces;
+using Api.Models.Dtos;
+using Api.Interfaces;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 

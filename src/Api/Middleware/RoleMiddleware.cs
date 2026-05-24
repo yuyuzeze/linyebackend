@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using Application.Interfaces;
+using Infrastructure.Interfaces;
 using Microsoft.Identity.Web;
 
 namespace Api.Middleware;
@@ -13,7 +13,8 @@ public class RoleMiddleware
     [
         new("/health"),
         new("/swagger"),
-        new("/api/auth")
+        new("/api/auth"),
+        new("/api/client-log")
     ];
 
     private readonly RequestDelegate _next;
@@ -51,14 +52,14 @@ public class RoleMiddleware
 
         if (string.IsNullOrEmpty(oid))
         {
-            await WriteForbiddenAsync(context, "Missing user object id in token.");
+            await WriteForbiddenAsync(context, "トークンにユーザーのオブジェクト ID がありません。");
             return;
         }
 
         var userRoles = await userRoleRepository.GetActiveByObjectIdAsync(oid, context.RequestAborted);
         if (userRoles.Count == 0)
         {
-            await WriteForbiddenAsync(context, "User has no application role assigned.");
+            await WriteForbiddenAsync(context, "ユーザーに業務ロールが割り当てられていません。");
             return;
         }
 

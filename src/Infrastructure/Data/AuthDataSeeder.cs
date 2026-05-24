@@ -1,5 +1,5 @@
-using Domain.Constants;
-using Domain.Entities;
+using Infrastructure.Constants;
+using Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -14,10 +14,6 @@ public static class AuthDataSeeder
         ILogger logger,
         CancellationToken cancellationToken = default)
     {
-        var pending = await db.Database.GetPendingMigrationsAsync(cancellationToken);
-        if (pending.Any())
-            await db.Database.MigrateAsync(cancellationToken);
-
         if (await db.Departments.AnyAsync(cancellationToken))
             return;
 
@@ -37,9 +33,9 @@ public static class AuthDataSeeder
                 IsActive = true
             });
             await db.SaveChangesAsync(cancellationToken);
-            logger.LogInformation("Seeded dev UserRole for OID {ObjectId}", devOid);
+            logger.LogInformation("開発用 UserRole を OID {ObjectId} にシードしました。", devOid);
         }
 
-        logger.LogInformation("Seeded default Department DEV");
+        logger.LogInformation("既定科室 DEV をシードしました。");
     }
 }

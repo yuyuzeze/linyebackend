@@ -1,6 +1,9 @@
 /*
     Manual schema initialization for Azure SQL Database.
     Execute this script in SSMS against your target database.
+
+    Schema changes are managed by DDL scripts (not EF migrations).
+    For incremental updates, add new scripts under scripts/ddl/.
 */
 
 SET ANSI_NULLS ON;
@@ -45,8 +48,15 @@ BEGIN
         BlobETag NVARCHAR(100) NULL,
         ProcessedAt DATETIME2 NOT NULL,
         Status NVARCHAR(20) NOT NULL,
-        ErrorMessage NVARCHAR(2000) NULL
+        ErrorMessage NVARCHAR(2000) NULL,
+        RowCount INT NULL
     );
+END;
+GO
+
+IF COL_LENGTH(N'dbo.ProcessedBlobRecords', N'RowCount') IS NULL
+BEGIN
+    ALTER TABLE dbo.ProcessedBlobRecords ADD RowCount INT NULL;
 END;
 GO
 
@@ -124,5 +134,69 @@ BEGIN
         CsvColumnName NVARCHAR(200) NULL,
         TargetFieldCode NVARCHAR(100) NOT NULL
     );
+END;
+GO
+
+IF OBJECT_ID(N'dbo.Departments', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Departments
+    (
+        Id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        Code NVARCHAR(50) NOT NULL,
+        Name NVARCHAR(200) NOT NULL
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = N'IX_Departments_Code'
+      AND object_id = OBJECT_ID(N'dbo.Departments')
+)
+BEGIN
+    CREATE UNIQUE INDEX IX_Departments_Code
+        ON dbo.Departments (Code);
+END;
+GO
+
+IF OBJECT_ID(N'dbo.UserRoles', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.UserRoles
+    (
+        Id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        EntraObjectId NVARCHAR(64) NOT NULL,
+        Upn NVARCHAR(256) NOT NULL,
+        DepartmentId INT NULL,
+        RoleCode NVARCHAR(50) NOT NULL,
+        IsActive BIT NOT NULL,
+        CONSTRAINT FK_UserRoles_Departments_DepartmentId
+            FOREIGN KEY (DepartmentId) REFERENCES dbo.Departments (Id)
+            ON DELETE SET NULL
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = N'IX_UserRoles_DepartmentId'
+      AND object_id = OBJECT_ID(N'dbo.UserRoles')
+)
+BEGIN
+    CREATE INDEX IX_UserRoles_DepartmentId
+        ON dbo.UserRoles (DepartmentId);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = N'IX_UserRoles_EntraObjectId'
+      AND object_id = OBJECT_ID(N'dbo.UserRoles')
+)
+BEGIN
+    CREATE INDEX IX_UserRoles_EntraObjectId
+        ON dbo.UserRoles (EntraObjectId);
 END;
 GO
