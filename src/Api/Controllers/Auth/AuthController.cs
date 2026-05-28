@@ -1,5 +1,5 @@
 using Api.Models.Dtos;
-using Api.Logging;
+using Api.Utility.Logging;
 using Api.Interfaces;
 using Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Authorization;

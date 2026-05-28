@@ -1,5 +1,5 @@
 using Api.Models.Dtos;
-using Api.Logging;
+using Api.Utility.Logging;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

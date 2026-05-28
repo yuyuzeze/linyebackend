@@ -1,4 +1,4 @@
-using Api.Logging;
+using Api.Utility.Logging;
 using System.Net;
 using System.Text.Json;
 

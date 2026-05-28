@@ -2,7 +2,7 @@ using Api.Models.Dtos;
 using AutoMapper;
 using Infrastructure.Entities;
 
-namespace Api.Mapping;
+namespace Api.Models.Mapping;
 
 public class ApplicationMappingProfile : Profile
 {

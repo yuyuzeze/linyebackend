@@ -1,7 +1,7 @@
 using Api.Models.Dtos;
 using FluentValidation;
 
-namespace Api.Validators;
+namespace Api.Models.Validators;
 
 public class ClientLogEntryValidator : AbstractValidator<ClientLogEntryDto>
 {

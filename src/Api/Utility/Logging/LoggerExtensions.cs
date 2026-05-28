@@ -1,6 +1,6 @@
 using Serilog.Context;
 
-namespace Api.Logging;
+namespace Api.Utility.Logging;
 
 public static class LoggerExtensions
 {

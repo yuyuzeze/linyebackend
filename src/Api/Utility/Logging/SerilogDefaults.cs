@@ -1,4 +1,4 @@
-namespace Api.Logging;
+namespace Api.Utility.Logging;
 
 public static class SerilogDefaults
 {

@@ -1,15 +1,8 @@
 using Api.Extensions;
-using Api.Logging;
-using Api.Middleware;
-using Api.DependencyInjection;
 using Api.Interfaces;
-using Api.Services;
-using Api.Validators;
-using FluentValidation;
+using Api.Utility.Logging;
+using Api.Middleware;
 using Infrastructure.Data;
-using Infrastructure.Interfaces;
-using Infrastructure.Repositories;
-using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Events;
 
@@ -59,28 +52,10 @@ try
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
     builder.Services.AddApplication();
-    builder.Services.AddValidatorsFromAssemblyContaining<ClientLogEntryValidator>();
+    builder.Services.AddRepositories(builder.Configuration);
+    builder.Services.AddApiServices();
     builder.AddApiInfrastructure();
     builder.AddApiAuthentication();
-
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-        ?? "Server=(localdb)\\mssqllocaldb;Database=linye;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True";
-    builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseSqlServer(connectionString));
-
-    builder.Services.AddScoped<IDemoItemRepository, DemoItemRepository>();
-    builder.Services.AddScoped<IDemoItemService, DemoItemService>();
-    builder.Services.AddScoped<IVoucherRepository, VoucherRepository>();
-    builder.Services.AddScoped<IProcessedBlobRecordRepository, ProcessedBlobRecordRepository>();
-    builder.Services.AddScoped<IVoucherImportService, VoucherImportService>();
-    builder.Services.AddSingleton<IBlobStorageService, BlobStorageService>();
-    builder.Services.AddScoped<IApplicationTypeRepository, ApplicationTypeRepository>();
-    builder.Services.AddScoped<IApplicationTypeFieldRepository, ApplicationTypeFieldRepository>();
-    builder.Services.AddScoped<ICsvColumnMappingRepository, CsvColumnMappingRepository>();
-    builder.Services.AddScoped<IApplicationTypeService, ApplicationTypeService>();
-    builder.Services.AddScoped<ICsvMappingService, CsvMappingService>();
-    builder.Services.AddScoped<IUserRoleRepository, UserRoleRepository>();
-    builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
     if (builder.Environment.IsDevelopment())
     {

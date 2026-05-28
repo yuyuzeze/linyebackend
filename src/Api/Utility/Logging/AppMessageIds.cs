@@ -1,4 +1,4 @@
-namespace Api.Logging;
+namespace Api.Utility.Logging;
 
 /// <summary>プレースホルダー メッセージ ID。後日、正式メッセージコード表に置き換える。</summary>
 public static class AppMessageIds
