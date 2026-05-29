@@ -38,26 +38,4 @@ public class BlobsController : ControllerBase
             return NotFound(new { error = "コンテナが見つかりません。" });
         }
     }
-
-    [HttpGet("content")]
-    public async Task<IActionResult> GetContent(
-        [FromQuery] string? container,
-        [FromQuery] string blobName,
-        CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(blobName))
-            return BadRequest("blobName は必須です。");
-
-        var containerName = container ?? _config["BlobStorage:UploadContainerName"] ?? "csv-inbox";
-
-        try
-        {
-            var stream = await _blobStorage.GetContentAsync(containerName, blobName, cancellationToken);
-            return File(stream, "text/plain; charset=utf-8", Path.GetFileName(blobName));
-        }
-        catch (Azure.RequestFailedException ex) when (ex.Status == 404)
-        {
-            return NotFound();
-        }
-    }
 }

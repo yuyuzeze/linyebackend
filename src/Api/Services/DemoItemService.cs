@@ -68,7 +68,7 @@ public class DemoItemService : IDemoItemService
     return deleted
       ? ServiceResult<object?>.Success(
           null,
-          StatusCodes.Status204NoContent,
+          StatusCodes.Status200OK,
           new ApiMessageItem(DeletedCode, "DemoItem を削除しました。"))
       : ServiceResult<object?>.NotFound("指定された DemoItem が見つかりません。", NotFoundCode);
   }

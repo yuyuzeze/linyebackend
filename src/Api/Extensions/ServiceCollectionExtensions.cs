@@ -27,11 +27,6 @@ public static class ServiceCollectionExtensions
             options.UseSqlServer(connectionString));
 
         services.AddScoped<IDemoItemRepository, DemoItemRepository>();
-        services.AddScoped<IVoucherRepository, VoucherRepository>();
-        services.AddScoped<IProcessedBlobRecordRepository, ProcessedBlobRecordRepository>();
-        services.AddScoped<IApplicationTypeRepository, ApplicationTypeRepository>();
-        services.AddScoped<IApplicationTypeFieldRepository, ApplicationTypeFieldRepository>();
-        services.AddScoped<ICsvColumnMappingRepository, CsvColumnMappingRepository>();
         services.AddScoped<IUserRoleRepository, UserRoleRepository>();
 
         return services;
@@ -40,10 +35,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddApiServices(this IServiceCollection services)
     {
         services.AddScoped<IDemoItemService, DemoItemService>();
-        services.AddScoped<IVoucherImportService, VoucherImportService>();
         services.AddSingleton<IBlobStorageService, BlobStorageService>();
-        services.AddScoped<IApplicationTypeService, ApplicationTypeService>();
-        services.AddScoped<ICsvMappingService, CsvMappingService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
 
         return services;
