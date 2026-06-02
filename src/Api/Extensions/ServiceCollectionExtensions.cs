@@ -1,6 +1,8 @@
 using Api.Interfaces;
 using Api.Models.Mapping;
 using Api.Services;
+using Api.Utility.Messages;
+using Api.Utility.Storage;
 using FluentValidation;
 using Infrastructure.Data;
 using Infrastructure.Interfaces;
@@ -32,11 +34,12 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddApiServices(this IServiceCollection services)
+    public static IServiceCollection AddApiServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IDemoItemService, DemoItemService>();
-        services.AddSingleton<IBlobStorageService, BlobStorageService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddMessageTemplates();
+        services.AddBlobStorage(configuration);
 
         return services;
     }

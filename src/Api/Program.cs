@@ -53,7 +53,7 @@ try
     builder.Services.AddSwaggerGen();
     builder.Services.AddApplication();
     builder.Services.AddRepositories(builder.Configuration);
-    builder.Services.AddApiServices();
+    builder.Services.AddApiServices(builder.Configuration);
     builder.AddApiInfrastructure();
     builder.AddApiAuthentication();
 
