@@ -38,8 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\..\..\shared\messages\messages.ja.json">
-      <Link>Resources\messages.ja.json</Link>
+    <Content Update="Resources\messages.ja.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
