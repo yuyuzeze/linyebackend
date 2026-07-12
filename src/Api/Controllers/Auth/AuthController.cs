@@ -1,7 +1,8 @@
 using Api.Models.Dtos;
 using Api.Utility.Logging;
 using Api.Interfaces;
-using Infrastructure.Interfaces;
+using Infrastructure.DataAccess;
+using Infrastructure.Queries.Kyotsu;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,18 +13,18 @@ namespace Api.Controllers.Auth;
 public class AuthController : ControllerBase
 {
     private readonly ICurrentUserService _currentUser;
-    private readonly IUserRoleRepository _userRoleRepository;
+    private readonly IQueryGateway _queries;
     private readonly IConfiguration _configuration;
     private readonly ILogger<AuthController> _logger;
 
     public AuthController(
         ICurrentUserService currentUser,
-        IUserRoleRepository userRoleRepository,
+        IQueryGateway queries,
         IConfiguration configuration,
         ILogger<AuthController> logger)
     {
         _currentUser = currentUser;
-        _userRoleRepository = userRoleRepository;
+        _queries = queries;
         _configuration = configuration;
         _logger = logger;
     }
@@ -47,8 +48,13 @@ public class AuthController : ControllerBase
         if (string.IsNullOrEmpty(oid))
             return Unauthorized();
 
-        var userRoles = await _userRoleRepository.GetActiveByObjectIdAsync(oid, cancellationToken);
-        var firstDept = userRoles.Select(r => r.Department).FirstOrDefault(d => d != null);
+        var userRoles = await _queries.QueryAsync<ActiveUserRoleRow>(
+            nameof(KyotsuQueries.KYOTSU_Q003),
+            KyotsuQueries.KYOTSU_Q003,
+            new { EntraObjectId = oid },
+            cancellationToken);
+
+        var firstDept = userRoles.FirstOrDefault(r => r.DepartmentCode is not null);
 
         _logger.LogAppInformation(
             AppMessageIds.Information,
@@ -61,8 +67,8 @@ public class AuthController : ControllerBase
             ObjectId = oid,
             Upn = _currentUser.Upn ?? string.Empty,
             DisplayName = _currentUser.DisplayName,
-            DepartmentCode = firstDept?.Code,
-            DepartmentName = firstDept?.Name,
+            DepartmentCode = firstDept?.DepartmentCode,
+            DepartmentName = firstDept?.DepartmentName,
             Roles = userRoles.Select(r => r.RoleCode).Distinct(StringComparer.OrdinalIgnoreCase).ToList(),
             AuthEnabled = true
         });

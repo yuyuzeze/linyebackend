@@ -15,10 +15,10 @@ public class DemoItemService : IDemoItemService
   private const string UpdatedCode = "IKYOTSU21002";
   private const string DeletedCode = "IKYOTSU21003";
 
-  private readonly IDemoItemRepository _repository;
+  private readonly IRepository<DemoItem> _repository;
   private readonly IQueryGateway _queries;
 
-  public DemoItemService(IDemoItemRepository repository, IQueryGateway queries)
+  public DemoItemService(IRepository<DemoItem> repository, IQueryGateway queries)
   {
     _repository = repository;
     _queries = queries;
@@ -55,38 +55,40 @@ public class DemoItemService : IDemoItemService
       Description = dto.Description,
       CreatedAt = DateTime.UtcNow
     };
-    var created = await _repository.AddAsync(entity, cancellationToken);
+    await _repository.AddAsync(entity, cancellationToken);
     return ServiceResult<DemoItemDto>.Success(
-      MapToDto(created),
+      MapToDto(entity),
       StatusCodes.Status201Created,
       new ApiMessageItem(CreatedCode, "DemoItem を登録しました。"));
   }
 
   public async Task<ServiceResult<DemoItemDto>> UpdateAsync(int id, UpdateDemoItemDto dto, CancellationToken cancellationToken = default)
   {
-    var updated = await _repository.UpdateAsync(id, item =>
-    {
-      item.Name = dto.Name;
-      item.Description = dto.Description;
-    }, cancellationToken);
+    var item = await _repository.GetByIdAsync(id, cancellationToken);
+    if (item is null)
+      return ServiceResult<DemoItemDto>.NotFound("指定された DemoItem が見つかりません。", NotFoundCode);
 
-    return updated is null
-      ? ServiceResult<DemoItemDto>.NotFound("指定された DemoItem が見つかりません。", NotFoundCode)
-      : ServiceResult<DemoItemDto>.Success(
-          MapToDto(updated),
-          StatusCodes.Status200OK,
-          new ApiMessageItem(UpdatedCode, "DemoItem を更新しました。"));
+    item.Name = dto.Name;
+    item.Description = dto.Description;
+    await _repository.UpdateAsync(item, cancellationToken);
+
+    return ServiceResult<DemoItemDto>.Success(
+        MapToDto(item),
+        StatusCodes.Status200OK,
+        new ApiMessageItem(UpdatedCode, "DemoItem を更新しました。"));
   }
 
   public async Task<ServiceResult<object?>> DeleteAsync(int id, CancellationToken cancellationToken = default)
   {
-    var deleted = await _repository.DeleteAsync(id, cancellationToken);
-    return deleted
-      ? ServiceResult<object?>.Success(
-          null,
-          StatusCodes.Status200OK,
-          new ApiMessageItem(DeletedCode, "DemoItem を削除しました。"))
-      : ServiceResult<object?>.NotFound("指定された DemoItem が見つかりません。", NotFoundCode);
+    var item = await _repository.GetByIdAsync(id, cancellationToken);
+    if (item is null)
+      return ServiceResult<object?>.NotFound("指定された DemoItem が見つかりません。", NotFoundCode);
+
+    await _repository.RemoveAsync(item, cancellationToken);
+    return ServiceResult<object?>.Success(
+        null,
+        StatusCodes.Status200OK,
+        new ApiMessageItem(DeletedCode, "DemoItem を削除しました。"));
   }
 
   private static DemoItemDto MapToDto(DemoItem item) =>

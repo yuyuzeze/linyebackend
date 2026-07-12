@@ -29,8 +29,7 @@ public static class ServiceCollectionExtensions
         services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(connectionString));
 
-        services.AddScoped<IDemoItemRepository, DemoItemRepository>();
-        services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+        services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         services.AddScoped<IQueryGateway, DapperQueryGateway>();
 
         return services;

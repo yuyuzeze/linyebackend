@@ -11,9 +11,11 @@ Id で Entity を取得し、直後に更新して Save → IXxxRepository.GetBy
 
 ## Repository ホワイトリスト
 
-許可：`GetByIdAsync` / `ExistsAsync` / `AddAsync` / `UpdateAsync` / `RemoveAsync`
+汎用 `IRepository<T>` のみ使う（個別 XxxRepository は原則作らない）。
 
-禁止：Repository に `Search*` / `List*` / `FindBy*` / `Report*` / 複数テーブルの Include 一覧を追加すること。
+許可：`GetByIdAsync` / `AddAsync` / `UpdateAsync` / `RemoveAsync`
+
+禁止：`GetAll` / `Find(predicate)` / `Query() → IQueryable` / `Search*` / `List*` / 複数テーブル Include 一覧。
 
 ## Key ルール
 

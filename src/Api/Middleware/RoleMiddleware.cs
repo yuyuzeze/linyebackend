@@ -1,5 +1,6 @@
 using System.Security.Claims;
-using Infrastructure.Interfaces;
+using Infrastructure.DataAccess;
+using Infrastructure.Queries.Kyotsu;
 using Microsoft.Identity.Web;
 
 namespace Api.Middleware;
@@ -26,7 +27,7 @@ public class RoleMiddleware
         _configuration = configuration;
     }
 
-    public async Task InvokeAsync(HttpContext context, IUserRoleRepository userRoleRepository)
+    public async Task InvokeAsync(HttpContext context, IQueryGateway queries)
     {
         if (!_configuration.GetValue("Authentication:Enabled", false))
         {
@@ -56,7 +57,12 @@ public class RoleMiddleware
             return;
         }
 
-        var userRoles = await userRoleRepository.GetActiveByObjectIdAsync(oid, context.RequestAborted);
+        var userRoles = await queries.QueryAsync<ActiveUserRoleRow>(
+            nameof(KyotsuQueries.KYOTSU_Q003),
+            KyotsuQueries.KYOTSU_Q003,
+            new { EntraObjectId = oid },
+            context.RequestAborted);
+
         if (userRoles.Count == 0)
         {
             await WriteForbiddenAsync(context, "ユーザーに業務ロールが割り当てられていません。");
