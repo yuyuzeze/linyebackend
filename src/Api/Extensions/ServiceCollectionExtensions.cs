@@ -5,6 +5,7 @@ using Api.Utility.Messages;
 using Api.Utility.Storage;
 using FluentValidation;
 using Infrastructure.Data;
+using Infrastructure.DataAccess;
 using Infrastructure.Interfaces;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +31,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IDemoItemRepository, DemoItemRepository>();
         services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+        services.AddScoped<IQueryGateway, DapperQueryGateway>();
 
         return services;
     }
@@ -38,6 +40,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<IDemoItemService, DemoItemService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<Services.Satei.SateiSampleService>();
         services.AddMessageTemplates();
         services.AddBlobStorage(configuration);
 

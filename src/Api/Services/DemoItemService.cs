@@ -1,8 +1,10 @@
 using Api.Models.Dtos;
 using Api.Interfaces;
 using Api.Models;
+using Infrastructure.DataAccess;
 using Infrastructure.Entities;
 using Infrastructure.Interfaces;
+using Infrastructure.Queries.Kyotsu;
 
 namespace Api.Services;
 
@@ -14,13 +16,27 @@ public class DemoItemService : IDemoItemService
   private const string DeletedCode = "IKYOTSU21003";
 
   private readonly IDemoItemRepository _repository;
+  private readonly IQueryGateway _queries;
 
-  public DemoItemService(IDemoItemRepository repository) => _repository = repository;
+  public DemoItemService(IDemoItemRepository repository, IQueryGateway queries)
+  {
+    _repository = repository;
+    _queries = queries;
+  }
 
+  /// <summary>画面一覧 → QueryGateway + KYOTSU_Q001（Repository は使わない）。</summary>
   public async Task<ServiceResult<IReadOnlyList<DemoItemDto>>> GetAllAsync(CancellationToken cancellationToken = default)
   {
-    var items = await _repository.GetAllAsync(cancellationToken);
-    return ServiceResult<IReadOnlyList<DemoItemDto>>.Success(items.Select(MapToDto).ToList());
+    var rows = await _queries.QueryAsync<DemoItemListRow>(
+      nameof(KyotsuQueries.KYOTSU_Q001),
+      KyotsuQueries.KYOTSU_Q001,
+      cancellationToken: cancellationToken);
+
+    var dtos = rows
+      .Select(r => new DemoItemDto(r.Id, r.Name, r.Description, r.CreatedAt))
+      .ToList();
+
+    return ServiceResult<IReadOnlyList<DemoItemDto>>.Success(dtos);
   }
 
   public async Task<ServiceResult<DemoItemDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)

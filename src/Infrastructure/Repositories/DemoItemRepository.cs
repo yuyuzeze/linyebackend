@@ -14,11 +14,6 @@ public class DemoItemRepository : IDemoItemRepository
         _db = db;
     }
 
-    public async Task<IReadOnlyList<DemoItem>> GetAllAsync(CancellationToken cancellationToken = default)
-    {
-        return await _db.DemoItems.OrderBy(x => x.Id).ToListAsync(cancellationToken);
-    }
-
     public async Task<DemoItem?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         return await _db.DemoItems.FindAsync(new object[] { id }, cancellationToken);
